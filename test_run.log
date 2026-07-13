@@ -1,0 +1,30 @@
+NOTICE (I3Tray): I3Tray finishing... (I3Tray.cxx:525 in void I3Tray::Execute(bool, unsigned int))
+
+=== VHESelfVeto (full geometry) ===
+  Total physics frames : 7052
+  Passed veto          : 2
+  Vetoed               : 63
+  No vertex found      : 6987
+
+=== VHESelfVeto (shrunk geometry) ===
+  Total physics frames : 7052
+  Passed veto          : 1
+  Vetoed               : 43
+  No vertex found      : 7008
+
+=== Cross-comparison: full vs shrunk geometry ===
+
+  Full geometry: passed (2 events)
+    Shrunk passed      :      1  ( 50.0%)
+    Shrunk vetoed      :      1  ( 50.0%)
+    Shrunk no_vertex   :      0  (  0.0%)
+
+  Full geometry: vetoed (63 events)
+    Shrunk passed      :      0  (  0.0%)
+    Shrunk vetoed      :     42  ( 66.7%)
+    Shrunk no_vertex   :     21  ( 33.3%)
+
+  Full geometry: no_vertex (6987 events)
+    Shrunk passed      :      0  (  0.0%)
+    Shrunk vetoed      :      0  (  0.0%)
+    Shrunk no_vertex   :   6987  (100.0%)
