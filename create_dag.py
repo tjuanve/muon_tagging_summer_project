@@ -15,6 +15,7 @@ Usage:
 import argparse
 import glob
 import os
+import re
 import subprocess
 
 from icecube import dataio
@@ -166,7 +167,7 @@ def main():
                     print(f"  WARNING: run directory not found: {run_dir}")
                     continue
 
-                run_name = os.path.basename(run_dir)  # e.g. Run00124550
+                run_name = os.path.basename(os.path.normpath(run_dir))  # e.g. Run00124550
 
                 try:
                     gcd = find_gcd(run_dir)
@@ -187,17 +188,18 @@ def main():
                 out_run_dir = os.path.join(out_year_dir, run_name)
                 os.makedirs(out_run_dir, exist_ok=True)
 
-                for subrun in subruns:
-                    stem = os.path.basename(subrun).replace(".i3.zst", "")
+                for subrun_path in subruns:
+                    stem = os.path.basename(subrun_path).replace(".i3.zst", "")
                     outfile = os.path.join(out_run_dir, stem + "_VHESelfVeto.i3.zst")
 
-                    job_id = f"IC86_{year}_{run_name}_{stem}".replace(".", "_")
+                    subrun_tag = re.search(r'Subrun\w+', stem).group()
+                    job_id = f"IC86_{year}_{run_name}_{subrun_tag}"
 
                     dag.write(f"JOB {job_id} vheselfveto.sub\n")
                     dag.write(f'VARS {job_id} LOGDIR="{log_dir}"\n')
                     dag.write(f'VARS {job_id} JOBID="{job_id}"\n')
                     dag.write(f'VARS {job_id} GCD="{gcd}"\n')
-                    dag.write(f'VARS {job_id} INFILE="{subrun}"\n')
+                    dag.write(f'VARS {job_id} INFILE="{subrun_path}"\n')
                     dag.write(f'VARS {job_id} OUTFILE="{outfile}"\n')
                     dag.write("\n")
 
