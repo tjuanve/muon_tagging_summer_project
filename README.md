@@ -157,6 +157,7 @@ icetray-shell python create_dag.py --years 2014 2015 --submit
 | `--dag-name` | `vheselfveto` | Prefix for the DAG directory name |
 | `--no-burn-sample` | off | Process all good runs instead of burn sample only |
 | `--no-active-string-check` | off | Skip the active string requirement check |
+| `--max-runs` | *(all)* | Process only the first N runs per year |
 | `--submit` | off | Submit the DAG with `condor_submit_dag` after writing it |
 
 Output files are written to `<output-dir>/IC86_{year}/{RunNNNNNN}/<stem>_VHESelfVeto.i3.zst`. Logs go to `<dag-dir>/logs/`.

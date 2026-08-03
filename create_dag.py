@@ -58,6 +58,8 @@ def parse_args():
                    help="Process all good runs instead of only the burn sample (runs ending in 0)")
     p.add_argument("--no-active-string-check", action="store_true",
                    help="Skip the active string requirement check (not recommended)")
+    p.add_argument("--max-runs", type=int, default=None,
+                   help="Maximum number of runs to process per year (default: all)")
     return p.parse_args()
 
 
@@ -150,8 +152,11 @@ def main():
 
             burn_sample_only = not args.no_burn_sample
             run_dirs = parse_good_runs(good_run_info, burn_sample_only=burn_sample_only)
+            if args.max_runs is not None:
+                run_dirs = run_dirs[:args.max_runs]
             sample_label = "burn sample runs" if burn_sample_only else "good runs"
-            print(f"IC86_{year}: {len(run_dirs)} {sample_label}")
+            max_label = f" (capped at {args.max_runs})" if args.max_runs is not None else ""
+            print(f"IC86_{year}: {len(run_dirs)} {sample_label}{max_label}")
 
             out_year_dir = os.path.join(args.output_dir, f"IC86_{year}")
             os.makedirs(out_year_dir, exist_ok=True)
