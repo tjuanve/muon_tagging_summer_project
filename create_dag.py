@@ -15,7 +15,6 @@ Usage:
 import argparse
 import glob
 import os
-import re
 import subprocess
 
 from icecube import dataio
@@ -188,22 +187,19 @@ def main():
                 out_run_dir = os.path.join(out_year_dir, run_name)
                 os.makedirs(out_run_dir, exist_ok=True)
 
-                for subrun_path in subruns:
-                    stem = os.path.basename(subrun_path).replace(".i3.zst", "")
-                    outfile = os.path.join(out_run_dir, stem + "_VHESelfVeto.i3.zst")
+                outfile = os.path.join(out_run_dir, f"{run_name}_VHESelfVeto.i3.zst")
+                infiles = " ".join(subruns)
+                job_id = f"IC86_{year}_{run_name}"
 
-                    subrun_tag = re.search(r'Subrun\w+', stem).group()
-                    job_id = f"IC86_{year}_{run_name}_{subrun_tag}"
+                dag.write(f"JOB {job_id} vheselfveto.sub\n")
+                dag.write(f'VARS {job_id} LOGDIR="{log_dir}"\n')
+                dag.write(f'VARS {job_id} JOBID="{job_id}"\n')
+                dag.write(f'VARS {job_id} GCD="{gcd}"\n')
+                dag.write(f'VARS {job_id} INFILE="{infiles}"\n')
+                dag.write(f'VARS {job_id} OUTFILE="{outfile}"\n')
+                dag.write("\n")
 
-                    dag.write(f"JOB {job_id} vheselfveto.sub\n")
-                    dag.write(f'VARS {job_id} LOGDIR="{log_dir}"\n')
-                    dag.write(f'VARS {job_id} JOBID="{job_id}"\n')
-                    dag.write(f'VARS {job_id} GCD="{gcd}"\n')
-                    dag.write(f'VARS {job_id} INFILE="{subrun_path}"\n')
-                    dag.write(f'VARS {job_id} OUTFILE="{outfile}"\n')
-                    dag.write("\n")
-
-                    jobs.append(job_id)
+                jobs.append(job_id)
 
     print(f"\nDAG written to: {dag_path}")
     print(f"Total jobs    : {len(jobs)}")
