@@ -30,6 +30,8 @@ def parse_args():
                    help=f"Root directory for DAG files and logs (default: {DAG_BASE})")
     p.add_argument("--dag-name", default="h5",
                    help="DAG name prefix (default: h5)")
+    p.add_argument("--batch-size", type=int, default=100,
+                   help="Number of runs per job (default: 100)")
     p.add_argument("--submit", action="store_true",
                    help="Submit the DAG after creating it")
     return p.parse_args()
@@ -65,22 +67,24 @@ def main():
             i3_files = sorted(glob.glob(
                 os.path.join(in_year_dir, "*", "*_VHESelfVeto.i3.zst")
             ))
-            print(f"IC86_{year}: {len(i3_files)} i3 files")
+            n_batches = (len(i3_files) + args.batch_size - 1) // args.batch_size
+            print(f"IC86_{year}: {len(i3_files)} i3 files → {n_batches} jobs (batch size {args.batch_size})")
 
-            for i3_file in i3_files:
-                run_name = os.path.basename(os.path.dirname(i3_file))
-                stem = os.path.basename(i3_file).replace(".i3.zst", "")
+            for i in range(0, len(i3_files), args.batch_size):
+                batch = i3_files[i:i + args.batch_size]
+                first_run = os.path.basename(os.path.dirname(batch[0]))
 
-                out_run_dir = os.path.join(out_year_dir, run_name)
-                os.makedirs(out_run_dir, exist_ok=True)
+                out_batch_dir = os.path.join(out_year_dir, first_run)
+                os.makedirs(out_batch_dir, exist_ok=True)
 
-                outfile = os.path.join(out_run_dir, stem + ".h5")
-                job_id = f"h5_IC86_{year}_{run_name}_{stem}".replace(".", "_")
+                outfile = os.path.join(out_batch_dir, f"{first_run}.h5")
+                infiles = " ".join(batch)
+                job_id = f"h5_IC86_{year}_{first_run}"
 
                 dag.write(f"JOB {job_id} h5.sub\n")
                 dag.write(f'VARS {job_id} LOGDIR="{log_dir}"\n')
                 dag.write(f'VARS {job_id} JOBID="{job_id}"\n')
-                dag.write(f'VARS {job_id} INFILE="{i3_file}"\n')
+                dag.write(f'VARS {job_id} INFILE="{infiles}"\n')
                 dag.write(f'VARS {job_id} OUTFILE="{outfile}"\n')
                 dag.write("\n")
 
