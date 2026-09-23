@@ -41,7 +41,7 @@ def parse_args():
                     help="Max PE in veto region before vertex time (default: 3)")
     vv.add_argument("--output-bool", default="VHESelfVeto",
                     help="Frame key for veto I3Bool; VertexTime and VertexPos are appended for the other outputs (default: VHESelfVeto)")
-    vv.add_argument("--select-passing-inner", action="store_true", default=False,
+    vv.add_argument("--select-passing-inner", action="store_true", default=True,
                     help="Only write events that pass the outer veto but are vetoed by the shrunk-geometry veto (default: False)")
 
     # ---- DetectorShrinker -------------------------------------------------------
@@ -94,6 +94,10 @@ def main():
         "I3Reader", "reader",
         FilenameList=[args.gcd] + args.inputfiles,
     )
+
+    # ---- High Q filter ---------
+
+    tray.Add( lambda frame: 'QFilterMask' in frame and frame['QFilterMask']['HighQFilter_17'].condition_passed )
 
     # ---- LC pulse cleaning (once) -----------------------------------------------
     tray.AddModule(
@@ -184,6 +188,7 @@ def main():
         OutputVertexTime=args.output_bool + "ShrunkVertexTime",
         OutputVertexPos=args.output_bool + "ShrunkVertexPos",
     )
+    
 
     tray.AddModule(
         "HomogenizedQTot", "qtot_causal_shrunk",
@@ -191,6 +196,12 @@ def main():
         Output="CausalQTotShrunk",
         VertexTime=args.output_bool + "ShrunkVertexTime",
     )
+
+    # def print_passed(frame):
+    #     if args.output_bool in frame:
+    #         print("found it")
+    
+    # tray.Add(print_passed, "print")
 
     tray.AddModule(count_results, "count_shrunk", key=args.output_bool + "Shrunk", counter=c2,
                    Streams=[icetray.I3Frame.Physics])
@@ -201,19 +212,20 @@ def main():
 
     if args.select_passing_inner:
         def select_passing_inner(frame):
-            return (get_status(frame, args.output_bool) == "passed" and
-                    get_status(frame, args.output_bool + "Shrunk") == "vetoed")
+            return (get_status(frame, args.output_bool) == "vetoed" and
+                    get_status(frame, args.output_bool + "Shrunk") == "passed")
+            # return (get_status(frame, args.output_bool) == "passed")
 
         tray.AddModule(select_passing_inner, "select_passing_inner",
-                       Streams=[icetray.I3Frame.Physics])
-
+                       Streams=[icetray.I3Frame.Physics])            
+   
     tray.AddModule(
         "I3Writer", "writer",
         Filename=args.output,
         DropOrphanStreams=[icetray.I3Frame.DAQ],
     )
 
-    tray.Execute(10000)
+    tray.Execute()
     tray.Finish()
 
     def print_results(label, c):
