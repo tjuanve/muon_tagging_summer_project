@@ -1,0 +1,11 @@
+NOTICE (I3Tray): I3Tray finishing... (I3Tray.cxx:525 in void I3Tray::Execute(bool, unsigned int))
+/data/exp/IceCube/2015/filtered/level2pass2a/1021/Run00127009/Level2pass2_IC86.2015_data_Run00127009_Subrun00000000_0000000*.i3.zst
+Processing 10 data file(s)
+
+127009 567172
+MuonTag I3Bool(True)
+VHEFullSelfVeto I3Bool(True)
+VHEInnerSelfVeto I3Bool(False)
+CausalQTot I3Double(7059.14)
+InteriorCausalQTot I3Double(6608.85)
+count 1
